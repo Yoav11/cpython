@@ -2005,10 +2005,6 @@ class AttributeErrorTests(unittest.TestCase):
 
 class ImportErrorBenchmark(unittest.TestCase):
     def test_benchmark(self):         
-        # Create a big ImportError for testing
-        missing_name = "some_missing_module"
-        path_hint = "/this/is/a/fake/path/that/is/quite/long/and/descriptive"
-
         # Define the code to benchmark
         stmt = "repr(ImportError('Cannot import some_missing_module', name='some_missing_module', path='/this/is/a/fake/path/that/is/quite/long/and/descriptive'))"
 
