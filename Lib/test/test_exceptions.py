@@ -2008,7 +2008,6 @@ class ImportErrorBenchmark(unittest.TestCase):
         # Create a big ImportError for testing
         missing_name = "some_missing_module"
         path_hint = "/this/is/a/fake/path/that/is/quite/long/and/descriptive"
-        exc = ImportError(f"Cannot import {missing_name}", name=missing_name, path=path_hint)
 
         # Define the code to benchmark
         stmt = "repr(ImportError('Cannot import some_missing_module', name='some_missing_module', path='/this/is/a/fake/path/that/is/quite/long/and/descriptive'))"
@@ -2016,7 +2015,6 @@ class ImportErrorBenchmark(unittest.TestCase):
         # Run benchmark
         iterations = 1_000_000  # Adjust for desired accuracy
         total_time = timeit.timeit(stmt, number=iterations)
-        avg_time = total_time / iterations
 
         print(f"Total time for creating ImportError: {total_time:.10f} seconds")
 
