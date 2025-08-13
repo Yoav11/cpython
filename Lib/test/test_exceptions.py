@@ -2005,10 +2005,8 @@ class AttributeErrorTests(unittest.TestCase):
 
 class ImportErrorBenchmark(unittest.TestCase):
     def test_benchmark(self):         
-        # Define the code to benchmark
         stmt = "repr(ImportError('Cannot import some_missing_module', name='some_missing_module', path='/this/is/a/fake/path/that/is/quite/long/and/descriptive'))"
 
-        # Run benchmark
         iterations = 1_000_000
         total_time = timeit.timeit(stmt, number=iterations)
 
