@@ -20,6 +20,7 @@ from test.support.import_helper import import_module
 from test.support.os_helper import TESTFN, unlink
 from test.support.warnings_helper import check_warnings
 from test import support
+import timeit
 
 try:
     import _testcapi
@@ -2002,6 +2003,22 @@ class AttributeErrorTests(unittest.TestCase):
 
     # Note: name suggestion tests live in `test_traceback`.
 
+class ImportErrorBenchmark(unittest.TestCase):
+    def test_benchmark(self):         
+        # Create a big ImportError for testing
+        missing_name = "some_missing_module"
+        path_hint = "/this/is/a/fake/path/that/is/quite/long/and/descriptive"
+        exc = ImportError(f"Cannot import {missing_name}", name=missing_name, path=path_hint)
+
+        # Define the code to benchmark
+        stmt = "repr(ImportError('Cannot import some_missing_module', name='some_missing_module', path='/this/is/a/fake/path/that/is/quite/long/and/descriptive'))"
+
+        # Run benchmark
+        iterations = 1_000_000  # Adjust for desired accuracy
+        total_time = timeit.timeit(stmt, number=iterations)
+        avg_time = total_time / iterations
+
+        print(f"Total time for creating ImportError: {total_time:.10f} seconds")
 
 class ImportErrorTests(unittest.TestCase):
 

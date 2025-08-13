@@ -1868,54 +1868,80 @@ static PyObject *
 ImportError_repr(PyObject *self)
 {
     int hasargs = PyTuple_GET_SIZE(((PyBaseExceptionObject *)self)->args) != 0;
-    PyImportErrorObject *exc = PyImportErrorObject_CAST(self);
-    PyUnicodeWriter *writer = PyUnicodeWriter_Create(0);
-    if (writer == NULL) {
-        goto error;
-    }
     PyObject *r = BaseException_repr(self);
-    if (r == NULL) {
-        goto error;
-    }
-    if (PyUnicodeWriter_WriteSubstring(
-        writer, r, 0, PyUnicode_GET_LENGTH(r) - 1) < 0)
-    {
-        Py_XDECREF(r);
-        goto error;
-    }
-    Py_XDECREF(r);
-    if (exc->name) {
-        if (hasargs) {
-            if (PyUnicodeWriter_WriteASCII(writer, ", ", 2) < 0) {
-                goto error;
-            }
-        }
-        if (PyUnicodeWriter_Format(writer, "name=%R", exc->name) < 0) {
-            goto error;
-        }
-        hasargs = 1;
-    }
-    if (exc->path) {
-        if (hasargs) {
-            if (PyUnicodeWriter_WriteASCII(writer, ", ", 2) < 0) {
-                goto error;
-            }
-        }
-        if (PyUnicodeWriter_Format(writer, "path=%R", exc->path) < 0) {
-            goto error;
-        }
-    }
+    PyImportErrorObject *exc = PyImportErrorObject_CAST(self);
 
-    if (PyUnicodeWriter_WriteChar(writer, ')') < 0) {
-        goto error;
+    if (r && (exc->name || exc->path)) {
+        /* remove ')' */
+        Py_SETREF(r, PyUnicode_Substring(r, 0, PyUnicode_GET_LENGTH(r) - 1));
+        if (r && exc->name) {
+            Py_SETREF(r, PyUnicode_FromFormat("%U%sname=%R",
+                            r, hasargs ? ", " : "", exc->name));
+            hasargs = 1;
+        }
+        if (r && exc->path) {
+            Py_SETREF(r, PyUnicode_FromFormat("%U%spath=%R",
+                            r, hasargs ? ", " : "", exc->path));
+        }
+        if (r) {
+            Py_SETREF(r, PyUnicode_FromFormat("%U)", r));
+        }
     }
-
-    return PyUnicodeWriter_Finish(writer);
-
-error:
-    PyUnicodeWriter_Discard(writer);
-    return NULL;
+    return r;
 }
+
+// static PyObject *
+// ImportError_repr(PyObject *self)
+// {
+//     int hasargs = PyTuple_GET_SIZE(((PyBaseExceptionObject *)self)->args) != 0;
+//     PyImportErrorObject *exc = PyImportErrorObject_CAST(self);
+//     PyUnicodeWriter *writer = PyUnicodeWriter_Create(0);
+//     if (writer == NULL) {
+//         goto error;
+//     }
+//     PyObject *r = BaseException_repr(self);
+//     if (r == NULL) {
+//         goto error;
+//     }
+//     if (PyUnicodeWriter_WriteSubstring(
+//         writer, r, 0, PyUnicode_GET_LENGTH(r) - 1) < 0)
+//     {
+//         Py_XDECREF(r);
+//         goto error;
+//     }
+//     Py_XDECREF(r);
+//     if (exc->name) {
+//         if (hasargs) {
+//             if (PyUnicodeWriter_WriteASCII(writer, ", ", 2) < 0) {
+//                 goto error;
+//             }
+//         }
+//         if (PyUnicodeWriter_Format(writer, "name=%R", exc->name) < 0) {
+//             goto error;
+//         }
+//         hasargs = 1;
+//     }
+//     if (exc->path) {
+//         if (hasargs) {
+//             if (PyUnicodeWriter_WriteASCII(writer, ", ", 2) < 0) {
+//                 goto error;
+//             }
+//         }
+//         if (PyUnicodeWriter_Format(writer, "path=%R", exc->path) < 0) {
+//             goto error;
+//         }
+//     }
+
+//     if (PyUnicodeWriter_WriteChar(writer, ')') < 0) {
+//         goto error;
+//     }
+
+//     return PyUnicodeWriter_Finish(writer);
+
+// error:
+//     PyUnicodeWriter_Discard(writer);
+//     return NULL;
+// }
 
 static PyMemberDef ImportError_members[] = {
     {"msg", _Py_T_OBJECT, offsetof(PyImportErrorObject, msg), 0,
